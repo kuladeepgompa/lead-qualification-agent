@@ -1,6 +1,6 @@
 """Pydantic schemas for the API's stable public error envelope."""
 
-from typing import Any
+
 
 from pydantic import Field
 

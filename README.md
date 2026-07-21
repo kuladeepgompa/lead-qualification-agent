@@ -4,7 +4,7 @@ A production-ready AI-powered REST API built with **FastAPI** that qualifies B2B
 
 ---
 
-## Features
+# Features
 
 - AI-powered lead qualification using OpenAI Structured Outputs
 - Lead scoring (0–100)
@@ -22,7 +22,7 @@ A production-ready AI-powered REST API built with **FastAPI** that qualifies B2B
 - Redis and in-memory caching
 - Prompt injection protection
 - PII redaction
-- Structured logging and telemetry
+- Structured JSON logging and telemetry
 - LLM token usage & cost tracking
 - Retry & timeout handling
 - Docker & Docker Compose support
@@ -86,38 +86,37 @@ lead-qualification-agent/
 # Architecture
 
 ```text
-                HTTP Client
-                     │
-                     ▼
-         FastAPI REST API
-                     │
-                     ▼
-        Request Validation
-          (Pydantic v2)
-                     │
-                     ▼
-     Lead Qualification Service
-          │                │
-          │                ▼
-          │        Prompt Registry
-          │
-          ├────────► Cache
-          │     (Redis / Memory)
-          │
-          ▼
-     OpenAI Provider
-          │
-          ▼
- Structured JSON Response
-          │
-          ▼
-Response Validation & Reconciliation
-          │
-          ▼
- Usage Tracking & Telemetry
-          │
-          ▼
-      JSON API Response
+                    HTTP Client
+                         │
+                         ▼
+              FastAPI REST API
+                         │
+                         ▼
+         Request Validation (Pydantic)
+                         │
+                         ▼
+      Lead Qualification Service
+             │                  │
+             │                  ▼
+             │          Prompt Registry
+             │
+             ├────────► Cache
+             │     (Redis / Memory)
+             │
+             ▼
+      OpenAI Provider Adapter
+             │
+             ▼
+    Structured JSON Response
+             │
+             ▼
+ Response Validation & Reconciliation
+             │
+             ▼
+     Usage Tracking & Telemetry
+             │
+             ▼
+         JSON API Response
 ```
 
 ---
@@ -130,20 +129,20 @@ Response Validation & Reconciliation
 - uv
 - Docker (optional)
 - Redis (optional)
-- OpenAI API Key
+- OpenAI API Key (required for lead qualification endpoint)
 
 ---
 
-## Installation
+# Installation
 
-Clone the repository
+Clone the repository.
 
 ```bash
 git clone https://github.com/kuladeepgompa/lead-qualification-agent.git
 cd lead-qualification-agent
 ```
 
-Install dependencies
+Install dependencies.
 
 ```bash
 uv sync
@@ -187,13 +186,13 @@ uv run uvicorn app.main:app --reload --port 8000
 
 Once the server starts:
 
-Swagger UI
+**Swagger UI**
 
 ```
 http://localhost:8000/docs
 ```
 
-ReDoc
+**ReDoc**
 
 ```
 http://localhost:8000/redoc
@@ -212,11 +211,11 @@ docker-compose up --build
 # API Endpoints
 
 | Method | Endpoint | Description |
-|----------|-----------------------------|-------------------------|
+|----------|------------------------------|------------------------------|
 | GET | `/api/v1/health` | Health Check |
 | GET | `/api/v1/health/live` | Liveness Probe |
 | GET | `/api/v1/health/ready` | Readiness Probe |
-| POST | `/api/v1/lead/qualify` | Qualify a Lead |
+| POST | `/api/v1/lead/qualify` | Qualify a B2B sales lead |
 
 ---
 
@@ -294,25 +293,25 @@ curl -X POST http://localhost:8000/api/v1/lead/qualify \
 
 # Testing
 
-Run all tests
+Run the full test suite.
 
 ```bash
 uv run pytest -q
 ```
 
-Run evaluation harness
+Run the evaluation harness.
 
 ```bash
 uv run python tests/evaluation/evaluate.py
 ```
 
-Run Ruff
+Run Ruff linting.
 
 ```bash
 uv run ruff check .
 ```
 
-Verify formatting
+Verify formatting.
 
 ```bash
 uv run ruff format --check .
@@ -322,13 +321,13 @@ uv run ruff format --check .
 
 # Production Features
 
-- Shared AsyncOpenAI client
+- Shared AsyncOpenAI client lifecycle
 - Singleton Redis connection pool
 - Singleton in-memory cache
-- Request body size limiting
 - Structured JSON logging
 - Prompt versioning
 - Automatic PII redaction
+- Request body size protection
 - Retry & timeout handling
 - Redis fail-open strategy
 - Configurable cache TTL
@@ -338,10 +337,10 @@ uv run ruff format --check .
 
 # Future Improvements
 
-- Multi-provider support (Claude & Gemini)
+- Multi-provider LLM support (Claude & Gemini)
 - Authentication & Authorization
 - Rate limiting
-- CI/CD with GitHub Actions
+- GitHub Actions CI/CD
 - Kubernetes deployment
 - Prometheus & Grafana monitoring
 

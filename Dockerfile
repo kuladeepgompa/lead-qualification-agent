@@ -21,7 +21,7 @@ WORKDIR /app
 
 # Create non-root user
 RUN addgroup --system --gid 1001 appgroup && \
-    adduser --system --uid 1001 --gid 1001 appuser
+  adduser --system --uid 1001 --gid 1001 appuser
 
 # Copy virtual environment from builder
 COPY --from=builder /build/.venv /app/.venv
@@ -33,9 +33,9 @@ COPY pyproject.toml /app/pyproject.toml
 
 # Set default environment variables
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    LEAD_HOST=0.0.0.0 \
-    LEAD_PORT=8000
+  PYTHONDONTWRITEBYTECODE=1 \
+  LEAD_HOST=0.0.0.0 \
+  LEAD_PORT=8000
 
 # Change ownership to non-root user
 RUN chown -R appuser:appgroup /app
@@ -47,4 +47,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/live')" || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

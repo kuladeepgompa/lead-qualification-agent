@@ -21,6 +21,7 @@ from app.llm.base import (
 )
 from app.llm.factory import get_llm_provider
 from app.prompts.registry import PromptDefinition, get_lead_qualification_prompt
+from app.repositories.cache import QualificationCache
 from app.repositories.usage import UsageRepository
 from app.schemas.lead import LeadQualificationRequest
 from app.schemas.qualification import (
@@ -30,6 +31,7 @@ from app.schemas.qualification import (
     QualificationMetadata,
 )
 from app.schemas.usage import UsageRecord
+from app.utils.normalization import compute_lead_cache_key
 from app.utils.privacy import redact_lead_data
 
 
@@ -43,12 +45,14 @@ class LeadQualificationService:
         settings: Settings,
         prompt: PromptDefinition | None = None,
         usage_repository: UsageRepository | None = None,
+        cache: QualificationCache | None = None,
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
     ) -> None:
         self._provider = provider
         self._settings = settings
         self._prompt = prompt or get_lead_qualification_prompt()
         self._usage_repository = usage_repository
+        self._cache = cache
         self._sleep = sleep
         self._logger = get_logger(__name__)
 
@@ -56,6 +60,22 @@ class LeadQualificationService:
         self, lead: LeadQualificationRequest, *, request_id: str
     ) -> LeadQualificationResponse:
         """Return a strict public qualification response for one validated lead."""
+
+        if self._cache:
+            cache_key = compute_lead_cache_key(lead)
+            cached_response = await self._cache.get(cache_key)
+            if cached_response:
+                self._logger.info(
+                    "qualification_cache_hit",
+                    extra={"request_id": request_id, "cache_key": cache_key},
+                )
+                return cached_response.model_copy(
+                    update={
+                        "metadata": cached_response.metadata.model_copy(
+                            update={"request_id": request_id, "cached": True}
+                        )
+                    }
+                )
 
         start_time = time.perf_counter()
         raw_result = await self._generate_with_retries(lead)
@@ -107,7 +127,7 @@ class LeadQualificationService:
             },
         )
 
-        return LeadQualificationResponse(
+        response = LeadQualificationResponse(
             **result.model_dump(),
             metadata=QualificationMetadata(
                 request_id=request_id,
@@ -115,6 +135,12 @@ class LeadQualificationService:
                 cached=False,
             ),
         )
+
+        if self._cache:
+            cache_key = compute_lead_cache_key(lead)
+            await self._cache.set(cache_key, response, ttl_seconds=self._settings.cache_ttl_seconds)
+
+        return response
 
     async def _generate_with_retries(self, lead: LeadQualificationRequest) -> dict[str, Any]:
         """Bound transient provider failures with exponential backoff and a total attempt count."""
@@ -192,10 +218,25 @@ class LeadQualificationService:
         )
 
 
+def get_qualification_cache(settings: Settings) -> QualificationCache | None:
+    """Instantiate the configured cache backend if caching is enabled."""
+
+    if not settings.cache_enabled:
+        return None
+    if settings.cache_backend == "redis":
+        from app.repositories.cache import RedisCache, create_redis_client
+
+        return RedisCache(create_redis_client(settings.redis_url))
+    from app.repositories.cache import InMemoryCache
+
+    return InMemoryCache()
+
+
 def get_qualification_service(
     settings: Settings = Depends(get_settings),
     provider: StructuredLLMProvider = Depends(get_llm_provider),
 ) -> LeadQualificationService:
     """Build the request-scoped qualification service from configured dependencies."""
 
-    return LeadQualificationService(provider=provider, settings=settings)
+    cache = get_qualification_cache(settings)
+    return LeadQualificationService(provider=provider, settings=settings, cache=cache)

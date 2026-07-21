@@ -1,6 +1,6 @@
 # AI Lead Qualification Agent
 
-An production-grade REST API built with FastAPI and Python for AI-assisted B2B lead qualification, scoring, and triage using LLM structured outputs.
+A production-grade REST API built with FastAPI and Python for AI-assisted B2B lead qualification, scoring, and triage using LLM structured outputs.
 
 ---
 
@@ -8,9 +8,11 @@ An production-grade REST API built with FastAPI and Python for AI-assisted B2B l
 
 - **Structured LLM Qualification:** Uses native OpenAI JSON Schema mode (`gpt-4o-mini`) to extract lead score (0–100), priority (`HOT`/`WARM`/`COLD`), buying intent, company size, deal estimates, pain points, next actions, and confidence scores.
 - **Deterministic Priority Reconciliation:** Enforces score-band rules (`HOT` $\ge 75$, `WARM` $40\text{--}74$, `COLD` $< 40$) so score and priority cannot disagree.
+- **Response Caching (Redis / Memory):** Caches qualification results for identical normalized inputs with configurable TTL to reduce latency and API costs.
 - **Prompt Versioning & Anti-Injection:** Delimits lead input within data tags (`<lead_data>`) with system instructions prohibiting prompt injection.
 - **Observability & Safe Telemetry:** Structured JSON logging with context-scoped `X-Request-ID` correlation IDs, latency tracking, token usage, estimated USD cost, and automatic PII redaction (email/phone/message).
 - **Graceful Error Handling:** Standardized public error envelope (`error.code`, `error.message`, `error.request_id`, `error.details`) for 422 validation, 502 LLM failures, 504 timeouts, and 503 configuration issues.
+- **Container Deployment:** Multi-stage `Dockerfile` and `docker-compose.yml` supporting Redis-backed production caching out of the box.
 
 ---
 
@@ -27,6 +29,7 @@ FastAPI Router (POST /api/v1/lead/qualify)
   │
 Lead Qualification Service
   │
+  ├─► Qualification Cache (Redis / InMemory)
   ├─► Prompt Registry (lead_qualification_v1)
   ├─► LLM Provider Adapter (OpenAI Structured Output)
   ├─► Result Validation & Priority Reconciliation
@@ -44,6 +47,7 @@ JSON Response (LeadQualificationResponse + Metadata)
 
 - Python 3.11+
 - `uv` (Fast Python package installer)
+- Docker & Docker Compose (optional for container deployment)
 
 ### 2. Environment Setup
 
@@ -62,9 +66,13 @@ LEAD_OPENAI_API_KEY=sk-proj-your-api-key
 LEAD_OPENAI_MODEL=gpt-4o-mini
 LEAD_HOT_LEAD_MIN_SCORE=75
 LEAD_WARM_LEAD_MIN_SCORE=40
+LEAD_CACHE_ENABLED=true
+LEAD_CACHE_BACKEND=redis
+LEAD_REDIS_URL=redis://localhost:6379/0
+LEAD_CACHE_TTL_SECONDS=3600
 ```
 
-### 3. Run Locally
+### 3. Run Locally (uvicorn)
 
 Start the dev server:
 ```bash
@@ -74,6 +82,12 @@ uv run uvicorn app.main:app --reload --port 8000
 Access API Documentation:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
+
+### 4. Run with Docker Compose (API + Redis)
+
+```bash
+docker-compose up --build
+```
 
 ---
 
@@ -113,11 +127,16 @@ curl -X POST "http://localhost:8000/api/v1/lead/qualify" \
 
 ---
 
-## Running Tests and Linting
+## Running Tests, Evaluation, and Linting
 
 Run the test suite:
 ```bash
 uv run pytest -q
+```
+
+Run model evaluation harness:
+```bash
+uv run python tests/evaluation/evaluate.py
 ```
 
 Run code formatting and lint checks:

@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     llm_retry_base_delay_seconds: float = Field(default=0.25, gt=0, le=10)
     hot_lead_min_score: int = Field(default=75, ge=0, le=100)
     warm_lead_min_score: int = Field(default=40, ge=0, le=100)
+    cache_enabled: bool = False
+    cache_backend: Literal["memory", "redis"] = "memory"
+    redis_url: str = Field(default="redis://localhost:6379/0", min_length=1)
+    cache_ttl_seconds: int = Field(default=3600, ge=1, le=864000)
 
     @model_validator(mode="after")
     def validate_priority_bands(self) -> "Settings":

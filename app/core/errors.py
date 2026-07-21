@@ -9,6 +9,7 @@ from starlette import status
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.logging import get_logger, get_request_id
+from app.schemas.errors import ErrorDetail, ErrorResponse
 
 
 class AppError(Exception):
@@ -20,7 +21,7 @@ class AppError(Exception):
         status_code: int,
         code: str,
         message: str,
-        details: list[dict[str, Any]] | None = None,
+        details: list[ErrorDetail] | None = None,
     ) -> None:
         self.status_code = status_code
         self.code = code
@@ -30,14 +31,20 @@ class AppError(Exception):
 
 
 def error_payload(
-    *, code: str, message: str, request_id: str, details: list[dict[str, Any]] | None = None
+    *, code: str, message: str, request_id: str, details: list[ErrorDetail] | None = None
 ) -> dict[str, Any]:
     """Build the standard public error envelope."""
 
-    error: dict[str, Any] = {"code": code, "message": message, "request_id": request_id}
-    if details:
-        error["details"] = details
-    return {"error": error}
+    return ErrorResponse.model_validate(
+        {
+            "error": {
+                "code": code,
+                "message": message,
+                "request_id": request_id,
+                "details": details,
+            }
+        }
+    ).model_dump(exclude_none=True)
 
 
 async def app_error_handler(_: Request, exc: AppError) -> JSONResponse:
@@ -58,7 +65,7 @@ async def validation_error_handler(_: Request, exc: RequestValidationError) -> J
     """Return validation failures in the public error envelope."""
 
     details = [
-        {"location": list(error["loc"]), "message": error["msg"], "type": error["type"]}
+        ErrorDetail(location=list(error["loc"]), message=error["msg"], type=error["type"])
         for error in exc.errors()
     ]
     return JSONResponse(

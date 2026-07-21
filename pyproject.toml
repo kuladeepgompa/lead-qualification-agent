@@ -5,6 +5,7 @@ description = "AI-assisted lead qualification API"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "email-validator>=2.2,<3.0",
     "fastapi>=0.115,<1.0",
     "pydantic-settings>=2.6,<3.0",
     "uvicorn[standard]>=0.30,<1.0",

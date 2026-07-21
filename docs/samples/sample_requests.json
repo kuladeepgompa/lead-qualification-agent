@@ -1,0 +1,106 @@
+{
+  "hot_lead_enterprise": {
+    "request": {
+      "name": "Sarah Jenkins",
+      "email": "s.jenkins@enterprise-tech.com",
+      "phone": "+14155552671",
+      "company": "Enterprise Tech Solutions",
+      "designation": "Chief Technology Officer",
+      "industry": "Cloud Infrastructure",
+      "employees": 2500,
+      "country": "United States",
+      "source": "Inbound Demo Request",
+      "message": "We are currently evaluating AI-assisted lead qualification tools to integrate into our Salesforce workflow. We have a budget allocated for Q3 and need to deploy within 30 days."
+    },
+    "expected_response": {
+      "lead_score": 92,
+      "priority": "HOT",
+      "buying_intent": "HIGH",
+      "intent": "Deploy enterprise AI lead qualification tool integrated with Salesforce within 30 days.",
+      "company_size": "ENTERPRISE",
+      "estimated_deal_size": {
+        "currency": "USD",
+        "min": 50000.0,
+        "max": 120000.0,
+        "basis": "Grounded in enterprise employee size (2,500) and stated Q3 budget allocation."
+      },
+      "pain_points": [
+        "Manual CRM lead qualification slowdowns",
+        "Lack of real-time sales lead triage"
+      ],
+      "recommended_next_action": "Schedule an executive discovery and architecture review call within 24 hours.",
+      "sales_summary": "High-priority enterprise opportunity led by CTO with confirmed budget, clear timeline, and integration requirements.",
+      "confidence_score": 0.95,
+      "metadata": {
+        "request_id": "req_sample_hot_001",
+        "prompt_version": "lead_qualification_v1",
+        "cached": false
+      }
+    }
+  },
+  "warm_lead_midmarket": {
+    "request": {
+      "name": "David Chen",
+      "email": "dchen@growthco.io",
+      "company": "GrowthCo Solutions",
+      "designation": "Head of Sales Operations",
+      "industry": "B2B SaaS",
+      "employees": 150,
+      "country": "Canada",
+      "source": "Organic Search",
+      "message": "Interested in learning more about your API pricing and capabilities for automatically scoring inbound web leads."
+    },
+    "expected_response": {
+      "lead_score": 65,
+      "priority": "WARM",
+      "buying_intent": "MEDIUM",
+      "intent": "Evaluating API capabilities and pricing for automated inbound lead scoring.",
+      "company_size": "MID_MARKET",
+      "estimated_deal_size": {
+        "currency": "USD",
+        "min": 12000.0,
+        "max": 30000.0,
+        "basis": "Estimated from mid-market company headcount (150) and standard SaaS tier pricing."
+      },
+      "pain_points": [
+        "Inbound lead volume scaling challenges"
+      ],
+      "recommended_next_action": "Send product documentation, API specifications, and pricing overview.",
+      "sales_summary": "Mid-market sales operations leader researching automated qualification solutions.",
+      "confidence_score": 0.82,
+      "metadata": {
+        "request_id": "req_sample_warm_002",
+        "prompt_version": "lead_qualification_v1",
+        "cached": false
+      }
+    }
+  },
+  "cold_lead_sparse": {
+    "request": {
+      "email": "info@localstore.net",
+      "company": "Local Retail Store"
+    },
+    "expected_response": {
+      "lead_score": 25,
+      "priority": "COLD",
+      "buying_intent": "UNKNOWN",
+      "intent": "Sparse submission with no stated operational need or intent details.",
+      "company_size": "SMB",
+      "estimated_deal_size": {
+        "currency": null,
+        "min": null,
+        "max": null,
+        "basis": "Insufficient data provided to estimate deal size."
+      },
+      "pain_points": [],
+      "recommended_next_action": "Enroll in automated email nurturing campaign to collect additional business requirements.",
+      "sales_summary": "Low-context inquiry missing key buyer contact details, role, and requirements.",
+      "confidence_score": 0.35,
+      "metadata": {
+        "request_id": "req_sample_cold_003",
+        "prompt_version": "lead_qualification_v1",
+        "cached": false
+      }
+    }
+  }
+}

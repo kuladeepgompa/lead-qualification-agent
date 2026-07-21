@@ -1,0 +1,130 @@
+{
+  "info": {
+    "_postman_id": "8f3b7d1e-4c2a-4a9f-9d3e-1b8f5a6c7d8e",
+    "name": "AI Lead Qualification Agent API",
+    "description": "Postman collection for testing the AI Lead Qualification Agent REST API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Checks",
+      "item": [
+        {
+          "name": "Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "health"]
+            }
+          }
+        },
+        {
+          "name": "Liveness Probe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/health/live",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "health", "live"]
+            }
+          }
+        },
+        {
+          "name": "Readiness Probe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/health/ready",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "health", "ready"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lead Qualification",
+      "item": [
+        {
+          "name": "Qualify Enterprise Hot Lead",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-ID",
+                "value": "postman-hot-lead-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sarah Jenkins\",\n  \"email\": \"s.jenkins@enterprise-tech.com\",\n  \"phone\": \"+14155552671\",\n  \"company\": \"Enterprise Tech Solutions\",\n  \"designation\": \"Chief Technology Officer\",\n  \"industry\": \"Cloud Infrastructure\",\n  \"employees\": 2500,\n  \"country\": \"United States\",\n  \"source\": \"Inbound Demo Request\",\n  \"message\": \"We are currently evaluating AI-assisted lead qualification tools to integrate into our Salesforce workflow. We have budget allocated for Q3.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/lead/qualify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lead", "qualify"]
+            }
+          }
+        },
+        {
+          "name": "Qualify Sparse Lead",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company\": \"Acme Corp\",\n  \"email\": \"info@acme.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/lead/qualify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lead", "qualify"]
+            }
+          }
+        },
+        {
+          "name": "Invalid Request (Validation Error)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Only Name Provided\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/lead/qualify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lead", "qualify"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}

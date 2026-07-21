@@ -78,4 +78,18 @@ class OpenAIProvider:
             raise InvalidProviderResponseError("OpenAI did not return valid JSON.") from exc
         if not isinstance(payload, dict):
             raise InvalidProviderResponseError("OpenAI returned a non-object JSON response.")
+        if completion.usage:
+            from app.llm.usage import calculate_estimated_cost
+
+            cost = calculate_estimated_cost(
+                self._model, completion.usage.prompt_tokens, completion.usage.completion_tokens
+            )
+            payload["_usage"] = {
+                "provider": "openai",
+                "model": self._model,
+                "prompt_tokens": completion.usage.prompt_tokens,
+                "completion_tokens": completion.usage.completion_tokens,
+                "total_tokens": completion.usage.total_tokens,
+                "estimated_cost_usd": cost,
+            }
         return payload

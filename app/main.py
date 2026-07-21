@@ -1,5 +1,7 @@
 """FastAPI application factory and process entry point."""
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -14,7 +16,19 @@ from app.core.errors import (
     validation_error_handler,
 )
 from app.core.logging import configure_logging, get_logger
-from app.core.middleware import RequestContextMiddleware
+from app.core.middleware import RequestBodySizeMiddleware, RequestContextMiddleware
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifecycle resources (e.g. closing Redis and LLM provider clients)."""
+
+    yield
+    from app.llm.openai import close_openai_clients
+    from app.repositories.cache import close_redis_client
+
+    await close_redis_client()
+    await close_openai_clients()
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -27,8 +41,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         title="AI Lead Qualification Agent",
         version="0.1.0",
         description="REST API foundation for AI-assisted lead qualification.",
+        lifespan=lifespan,
     )
     app.dependency_overrides[get_settings] = lambda: settings
+    app.add_middleware(RequestBodySizeMiddleware)
     app.add_middleware(RequestContextMiddleware)
     app.add_exception_handler(AppError, app_error_handler)
     app.add_exception_handler(RequestValidationError, validation_error_handler)

@@ -22,6 +22,33 @@ from app.llm.base import (
 )
 
 
+_openai_client_cache: dict[tuple[str, float], AsyncOpenAI] = {}
+
+
+def get_shared_openai_client(api_key: str, timeout_seconds: float) -> AsyncOpenAI:
+    """Return a shared singleton AsyncOpenAI client instance for the given API key and timeout."""
+
+    cache_key = (api_key, timeout_seconds)
+    if cache_key not in _openai_client_cache:
+        _openai_client_cache[cache_key] = AsyncOpenAI(
+            api_key=api_key,
+            timeout=timeout_seconds,
+            max_retries=0,
+        )
+    return _openai_client_cache[cache_key]
+
+
+async def close_openai_clients() -> None:
+    """Close all shared AsyncOpenAI client instances on application shutdown."""
+
+    for client in list(_openai_client_cache.values()):
+        try:
+            await client.close()
+        except Exception:
+            pass
+    _openai_client_cache.clear()
+
+
 class OpenAIProvider:
     """Generate strict JSON-schema output through OpenAI Chat Completions."""
 
@@ -30,10 +57,9 @@ class OpenAIProvider:
         if not api_key:
             raise ProviderConfigurationError("OPENAI_API_KEY is not configured.")
         self._model = settings.openai_model
-        self._client = client or AsyncOpenAI(
+        self._client = client or get_shared_openai_client(
             api_key=api_key,
-            timeout=settings.llm_timeout_seconds,
-            max_retries=0,
+            timeout_seconds=settings.llm_timeout_seconds,
         )
 
     async def generate_structured(

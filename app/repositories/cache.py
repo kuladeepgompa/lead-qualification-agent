@@ -1,10 +1,13 @@
 """Cache interface, in-memory, and Redis implementations for normalized lead responses."""
 
 import json
+from functools import lru_cache
 from typing import Any, Protocol
 
 from app.core.logging import get_logger
 from app.schemas.qualification import LeadQualificationResponse
+
+_redis_client: Any = None
 
 
 class QualificationCache(Protocol):
@@ -47,6 +50,13 @@ class InMemoryCache:
         self._store.clear()
 
 
+@lru_cache
+def get_in_memory_cache() -> InMemoryCache:
+    """Return a process-wide singleton InMemoryCache instance."""
+
+    return InMemoryCache()
+
+
 class RedisCache:
     """Redis-backed implementation of the qualification cache protocol."""
 
@@ -80,9 +90,24 @@ class RedisCache:
             self._logger.warning("redis_cache_set_failed", extra={"error": str(exc)})
 
 
-def create_redis_client(redis_url: str) -> Any:
-    """Factory helper to construct an async Redis client instance."""
+def get_redis_client(redis_url: str) -> Any:
+    """Return a process-wide singleton Redis client connection pool."""
 
-    import redis.asyncio as redis
+    global _redis_client
+    if _redis_client is None:
+        import redis.asyncio as redis
 
-    return redis.from_url(redis_url, socket_timeout=2.0)
+        _redis_client = redis.from_url(redis_url, socket_timeout=2.0)
+    return _redis_client
+
+
+async def close_redis_client() -> None:
+    """Close the global Redis client connection pool on application shutdown."""
+
+    global _redis_client
+    if _redis_client is not None:
+        try:
+            await _redis_client.aclose()
+        except Exception:
+            pass
+        _redis_client = None

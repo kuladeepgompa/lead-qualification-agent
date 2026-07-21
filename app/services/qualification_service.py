@@ -219,17 +219,17 @@ class LeadQualificationService:
 
 
 def get_qualification_cache(settings: Settings) -> QualificationCache | None:
-    """Instantiate the configured cache backend if caching is enabled."""
+    """Return the configured singleton cache backend if caching is enabled."""
 
     if not settings.cache_enabled:
         return None
     if settings.cache_backend == "redis":
-        from app.repositories.cache import RedisCache, create_redis_client
+        from app.repositories.cache import RedisCache, get_redis_client
 
-        return RedisCache(create_redis_client(settings.redis_url))
-    from app.repositories.cache import InMemoryCache
+        return RedisCache(get_redis_client(settings.redis_url))
+    from app.repositories.cache import get_in_memory_cache
 
-    return InMemoryCache()
+    return get_in_memory_cache()
 
 
 def get_qualification_service(

@@ -53,9 +53,13 @@ def configure_logging(settings: Settings) -> None:
 
     handler = logging.StreamHandler()
     handler.addFilter(RequestIdLogFilter())
-    handler.setFormatter(JsonFormatter() if settings.log_format == "json" else logging.Formatter(
-        "%(asctime)s %(levelname)s %(name)s [request_id=%(request_id)s] %(message)s"
-    ))
+    handler.setFormatter(
+        JsonFormatter()
+        if settings.log_format == "json"
+        else logging.Formatter(
+            "%(asctime)s %(levelname)s %(name)s [request_id=%(request_id)s] %(message)s"
+        )
+    )
     root_logger = logging.getLogger()
     root_logger.handlers.clear()
     root_logger.addHandler(handler)

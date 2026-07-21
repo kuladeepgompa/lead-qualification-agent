@@ -1,7 +1,5 @@
 """Pydantic schemas for the API's stable public error envelope."""
 
-
-
 from pydantic import Field
 
 from app.schemas.shared import StrictSchema

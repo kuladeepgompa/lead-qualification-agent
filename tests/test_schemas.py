@@ -62,7 +62,12 @@ def test_success_response_is_strict_and_bounded() -> None:
         buying_intent=BuyingIntent.HIGH,
         intent="Improve inbound lead routing.",
         company_size=CompanySize.MID_MARKET,
-        estimated_deal_size={"currency": "USD", "min": 15_000, "max": 40_000, "basis": "Company size."},
+        estimated_deal_size={
+            "currency": "USD",
+            "min": 15_000,
+            "max": 40_000,
+            "basis": "Company size.",
+        },
         pain_points=["Slow response time", "Manual routing"],
         recommended_next_action="Schedule a discovery call within one business day.",
         sales_summary="VP-level buyer with a clear operational need.",
@@ -82,7 +87,9 @@ def test_error_response_has_typed_details() -> None:
             "code": "VALIDATION_ERROR",
             "message": "Request validation failed.",
             "request_id": "request-123",
-            "details": [ErrorDetail(location=["body", "email"], message="Invalid email", type="value_error")],
+            "details": [
+                ErrorDetail(location=["body", "email"], message="Invalid email", type="value_error")
+            ],
         }
     )
 

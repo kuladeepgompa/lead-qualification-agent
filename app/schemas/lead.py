@@ -24,7 +24,9 @@ class LeadInput(StrictSchema):
     source: str | None = Field(default=None, min_length=1, max_length=100)
     message: str | None = Field(default=None, min_length=1, max_length=4_000)
 
-    @field_validator("name", "company", "designation", "industry", "country", "source", "message", mode="before")
+    @field_validator(
+        "name", "company", "designation", "industry", "country", "source", "message", mode="before"
+    )
     @classmethod
     def normalize_optional_text(cls, value: Any) -> Any:
         """Trim text and represent whitespace-only optional values as missing."""
@@ -48,7 +50,9 @@ class LeadInput(StrictSchema):
 
         if not isinstance(value, str):
             return value
-        normalized = "".join(character for character in value.strip() if character.isdigit() or character == "+")
+        normalized = "".join(
+            character for character in value.strip() if character.isdigit() or character == "+"
+        )
         return normalized or None
 
     @field_validator("phone")

@@ -87,7 +87,9 @@ async def test_service_returns_valid_public_response_and_reconciles_priority() -
     provider = FakeProvider([valid_provider_result(lead_score=50, priority="HOT")])
     service = service_for(provider)
 
-    response = await service.qualify(LeadQualificationRequest(company="Acme"), request_id="request-123")
+    response = await service.qualify(
+        LeadQualificationRequest(company="Acme"), request_id="request-123"
+    )
 
     assert response.priority.value == "WARM"
     assert response.metadata.request_id == "request-123"
@@ -101,7 +103,9 @@ async def test_service_retries_transient_provider_errors() -> None:
     delays: list[float] = []
     service = service_for(provider, sleep_calls=delays)
 
-    response = await service.qualify(LeadQualificationRequest(company="Acme"), request_id="request-123")
+    response = await service.qualify(
+        LeadQualificationRequest(company="Acme"), request_id="request-123"
+    )
 
     assert response.lead_score == 82
     assert len(provider.calls) == 2

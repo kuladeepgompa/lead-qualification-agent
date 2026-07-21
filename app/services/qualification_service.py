@@ -54,7 +54,9 @@ class LeadQualificationService:
         try:
             result = LLMQualificationResult.model_validate(raw_result)
         except ValidationError as exc:
-            self._logger.warning("llm_response_schema_invalid", extra={"error_count": exc.error_count()})
+            self._logger.warning(
+                "llm_response_schema_invalid", extra={"error_count": exc.error_count()}
+            )
             raise AppError(
                 status_code=502,
                 code="INVALID_LLM_RESPONSE",

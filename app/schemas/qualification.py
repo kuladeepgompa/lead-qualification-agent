@@ -65,10 +65,14 @@ class EstimatedDealSize(StrictSchema):
         has_minimum = self.min is not None
         has_maximum = self.max is not None
         if has_minimum != has_maximum:
-            raise ValueError("Estimated deal size min and max must both be provided or both be null.")
+            raise ValueError(
+                "Estimated deal size min and max must both be provided or both be null."
+            )
         if has_minimum:
             if self.currency is None:
-                raise ValueError("Currency is required when estimated deal size values are provided.")
+                raise ValueError(
+                    "Currency is required when estimated deal size values are provided."
+                )
             if self.min is not None and self.max is not None and self.min > self.max:
                 raise ValueError("Estimated deal size min must not exceed max.")
         elif self.currency is not None:

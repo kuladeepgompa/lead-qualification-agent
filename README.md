@@ -1,24 +1,15 @@
 # AI Lead Qualification Agent
 
-A production-grade REST API built with **FastAPI** and **Python** for AI-assisted B2B lead qualification using Large Language Models (LLMs). The service analyzes lead information and returns structured qualification insights, enabling sales teams to prioritize high-value prospects consistently and efficiently.
+A production-ready AI-powered REST API built with **FastAPI** that qualifies B2B sales leads using Large Language Models (LLMs). The service analyzes lead information and returns structured qualification insights to help sales teams prioritize prospects consistently and efficiently.
 
 ---
 
-# Features
+## Features
 
--AI-Powered Lead Qualification**
-  - Uses OpenAI Structured JSON Outputs (`gpt-4o-mini`) for deterministic lead analysis.
-
-- Lead Scoring**
-  - Returns a lead score from **0–100**.
-
-- Priority Classification**
-  - Automatically classifies leads into:
-    - **HOT (≥ 75)**
-    - **WARM (40–74)**
-    - **COLD (< 40)**
-
-- 🏢 **Business Insights**
+- AI-powered lead qualification using OpenAI Structured Outputs
+- Lead scoring (0–100)
+- Priority classification (HOT / WARM / COLD)
+- Business insights including:
   - Buying intent
   - Customer intent
   - Company size
@@ -27,88 +18,32 @@ A production-grade REST API built with **FastAPI** and **Python** for AI-assiste
   - Recommended next action
   - Sales summary
   - Confidence score
-
-- ✅ **Strict Validation**
-  - Pydantic v2 request/response validation.
-  - Structured JSON output with deterministic schema.
-
-- ⚡ **Caching**
-  - Redis-backed caching
-  - In-memory caching
-  - Configurable TTL
-  - Automatic cache metadata
-
-- 🔐 **Security & Reliability**
-  - Prompt injection protection
-  - PII redaction
-  - Request size limiting (1 MB)
-  - Graceful error handling
-  - Resource lifecycle management
-
-- 📈 **Observability**
-  - Structured JSON logging
-  - Request correlation IDs
-  - Latency tracking
-  - Token usage tracking
-  - Cost estimation
-
-- 🐳 **Deployment Ready**
-  - Docker
-  - Docker Compose
-  - Health endpoints
-  - Production configuration
+- Strict request & response validation using Pydantic v2
+- Redis and in-memory caching
+- Prompt injection protection
+- PII redaction
+- Structured logging and telemetry
+- LLM token usage & cost tracking
+- Retry & timeout handling
+- Docker & Docker Compose support
+- Unit, integration, and evaluation tests
+- Health endpoints for monitoring
 
 ---
 
-# Technology Stack
+# Tech Stack
 
-- Python 3.11
-- FastAPI
-- Pydantic v2
-- OpenAI API
-- Redis
-- Docker
-- Pytest
-- Ruff
-- Uvicorn
-
----
-
-# Architecture
-
-```text
-                 HTTP Client
-                      │
-                      ▼
-      FastAPI Router (/api/v1/lead/qualify)
-                      │
-                      ▼
-      Request Validation (Pydantic)
-                      │
-                      ▼
-        Lead Qualification Service
-          │                  │
-          │                  ▼
-          │           Prompt Registry
-          │
-          ├────────► Cache
-          │      (Redis / Memory)
-          │
-          ▼
-   OpenAI Provider Adapter
-          │
-          ▼
-      OpenAI Structured Output
-          │
-          ▼
- Response Validation & Reconciliation
-          │
-          ▼
- Usage Tracking & Telemetry
-          │
-          ▼
-      JSON API Response
-```
+| Category | Technology |
+|-----------|------------|
+| Language | Python 3.11 |
+| Framework | FastAPI |
+| Validation | Pydantic v2 |
+| LLM | OpenAI GPT-4o Mini |
+| Cache | Redis |
+| Containerization | Docker |
+| Testing | Pytest |
+| Linting | Ruff |
+| Server | Uvicorn |
 
 ---
 
@@ -135,8 +70,8 @@ lead-qualification-agent/
 ├── postman/
 │
 ├── tests/
-│   ├── integration/
 │   ├── unit/
+│   ├── integration/
 │   └── evaluation/
 │
 ├── Dockerfile
@@ -148,20 +83,77 @@ lead-qualification-agent/
 
 ---
 
+# Architecture
+
+```text
+                HTTP Client
+                     │
+                     ▼
+         FastAPI REST API
+                     │
+                     ▼
+        Request Validation
+          (Pydantic v2)
+                     │
+                     ▼
+     Lead Qualification Service
+          │                │
+          │                ▼
+          │        Prompt Registry
+          │
+          ├────────► Cache
+          │     (Redis / Memory)
+          │
+          ▼
+     OpenAI Provider
+          │
+          ▼
+ Structured JSON Response
+          │
+          ▼
+Response Validation & Reconciliation
+          │
+          ▼
+ Usage Tracking & Telemetry
+          │
+          ▼
+      JSON API Response
+```
+
+---
+
 # Getting Started
 
-## Requirements
+## Prerequisites
 
 - Python 3.11+
 - uv
 - Docker (optional)
 - Redis (optional)
+- OpenAI API Key
 
 ---
 
-## Environment Setup
+## Installation
 
-Copy the example environment file.
+Clone the repository
+
+```bash
+git clone https://github.com/kuladeepgompa/lead-qualification-agent.git
+cd lead-qualification-agent
+```
+
+Install dependencies
+
+```bash
+uv sync
+```
+
+---
+
+# Environment Configuration
+
+Copy the example configuration.
 
 ```bash
 cp .env.example .env
@@ -170,36 +162,18 @@ cp .env.example .env
 Example:
 
 ```env
+LEAD_APP_NAME=lead-qualification-agent
 LEAD_ENVIRONMENT=development
-LEAD_LOG_LEVEL=INFO
-LEAD_LOG_FORMAT=json
 
-LEAD_OPENAI_API_KEY=sk-proj-xxxxxxxx
+OPENAI_API_KEY=your-api-key
+
+LEAD_LLM_PROVIDER=openai
 LEAD_OPENAI_MODEL=gpt-4o-mini
 
-LEAD_HOT_LEAD_MIN_SCORE=75
-LEAD_WARM_LEAD_MIN_SCORE=40
-
-LEAD_CACHE_ENABLED=true
+LEAD_CACHE_ENABLED=false
 LEAD_CACHE_BACKEND=redis
 LEAD_REDIS_URL=redis://localhost:6379/0
-LEAD_CACHE_TTL_SECONDS=3600
 ```
-
----
-
-# Environment Variables
-
-| Variable | Description |
-|------------|----------------------------|
-| LEAD_OPENAI_API_KEY | OpenAI API Key |
-| LEAD_OPENAI_MODEL | OpenAI model |
-| LEAD_CACHE_ENABLED | Enable caching |
-| LEAD_CACHE_BACKEND | redis or memory |
-| LEAD_REDIS_URL | Redis connection URL |
-| LEAD_CACHE_TTL_SECONDS | Cache TTL |
-| LEAD_LOG_LEVEL | Logging level |
-| LEAD_ENVIRONMENT | Runtime environment |
 
 ---
 
@@ -210,6 +184,8 @@ LEAD_CACHE_TTL_SECONDS=3600
 ```bash
 uv run uvicorn app.main:app --reload --port 8000
 ```
+
+Once the server starts:
 
 Swagger UI
 
@@ -236,11 +212,11 @@ docker-compose up --build
 # API Endpoints
 
 | Method | Endpoint | Description |
-|----------|------------------------------|----------------------|
+|----------|-----------------------------|-------------------------|
 | GET | `/api/v1/health` | Health Check |
 | GET | `/api/v1/health/live` | Liveness Probe |
 | GET | `/api/v1/health/ready` | Readiness Probe |
-| POST | `/api/v1/lead/qualify` | Qualify Lead |
+| POST | `/api/v1/lead/qualify` | Qualify a Lead |
 
 ---
 
@@ -251,14 +227,14 @@ curl -X POST http://localhost:8000/api/v1/lead/qualify \
 -H "Content-Type: application/json" \
 -H "X-Request-ID: req-demo-001" \
 -d '{
-"name":"Aisha Sharma",
-"email":"aisha@example.com",
-"company":"Acme Solutions",
-"designation":"VP of Engineering",
-"industry":"Software",
-"employees":250,
-"country":"India",
-"message":"Evaluating AI lead qualification tools to integrate with our CRM."
+  "name":"Aisha Sharma",
+  "email":"aisha@example.com",
+  "company":"Acme Solutions",
+  "designation":"VP of Engineering",
+  "industry":"Software",
+  "employees":250,
+  "country":"India",
+  "message":"Evaluating AI lead qualification tools to integrate with our CRM."
 }'
 ```
 
@@ -298,8 +274,7 @@ curl -X POST http://localhost:8000/api/v1/lead/qualify \
   "error": {
     "code": "VALIDATION_ERROR",
     "message": "Invalid request.",
-    "request_id": "req-demo-001",
-    "details": {}
+    "request_id": "req-demo-001"
   }
 }
 ```
@@ -310,14 +285,14 @@ curl -X POST http://localhost:8000/api/v1/lead/qualify \
 
 | Resource | Description |
 |-----------|-------------|
-| docs/api.md | API documentation |
-| docs/prompt-design.md | Prompt engineering strategy |
-| docs/samples/sample_requests.json | Sample requests/responses |
-| postman/lead-qualification.postman_collection.json | Postman collection |
+| `docs/api.md` | Complete API documentation |
+| `docs/prompt-design.md` | Prompt engineering strategy |
+| `postman/` | Postman collection |
+| `tests/evaluation/` | Evaluation dataset |
 
 ---
 
-# Running Tests
+# Testing
 
 Run all tests
 
@@ -331,13 +306,13 @@ Run evaluation harness
 uv run python tests/evaluation/evaluate.py
 ```
 
-Run lint
+Run Ruff
 
 ```bash
 uv run ruff check .
 ```
 
-Check formatting
+Verify formatting
 
 ```bash
 uv run ruff format --check .
@@ -345,47 +320,30 @@ uv run ruff format --check .
 
 ---
 
-# Evaluation Results
+# Production Features
 
-```
-48 Tests Passed
-
-Schema Validity Rate : 100%
-Priority Consistency : 100%
-Score Range Agreement: 100%
-Average Latency      : 1.6 ms
-```
-
----
-
-# Production Hardening
-
-The service includes several production-ready optimizations:
-
-- Shared AsyncOpenAI client lifecycle
+- Shared AsyncOpenAI client
 - Singleton Redis connection pool
 - Singleton in-memory cache
-- Request body size protection (1 MB)
-- Graceful shutdown of shared resources
-- Structured logging with correlation IDs
+- Request body size limiting
+- Structured JSON logging
 - Prompt versioning
 - Automatic PII redaction
+- Retry & timeout handling
 - Redis fail-open strategy
-- Configurable caching with TTL
+- Configurable cache TTL
+- Health monitoring endpoints
 
 ---
 
 # Future Improvements
 
-Possible future enhancements include:
-
-- Multi-provider LLM support (Claude, Gemini)
-- Streaming responses
-- Authentication & authorization
+- Multi-provider support (Claude & Gemini)
+- Authentication & Authorization
 - Rate limiting
+- CI/CD with GitHub Actions
 - Kubernetes deployment
 - Prometheus & Grafana monitoring
-- CI/CD with GitHub Actions
 
 ---
 
@@ -394,7 +352,7 @@ Possible future enhancements include:
 **Kuladeep Gompa**
 
 B.Tech – Data Science & Artificial Intelligence  
-IIIT Dharwad
+Indian Institute of Information Technology Dharwad
 
 GitHub: https://github.com/kuladeepgompa
 
